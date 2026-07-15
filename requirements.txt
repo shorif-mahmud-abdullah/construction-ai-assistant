@@ -1,0 +1,7 @@
+ollama
+chromadb
+sentence-transformers
+pypdf
+psycopg2-binary
+python-dotenv
+numpy
