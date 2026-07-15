@@ -4,7 +4,7 @@ An AI-powered assistant for construction engineering queries. Uses RAG (Retrieva
 
 ## Architecture
 
-- **LLM**: Ollama (local inference)
+- **LLM**: Ollama (local inference, default model: `qwen2.5:1.5b`)
 - **Embeddings**: `all-MiniLM-L6-v2` via sentence-transformers
 - **Vector DB**: ChromaDB (persistent storage)
 - **Database**: PostgreSQL (notes storage)
@@ -14,18 +14,26 @@ An AI-powered assistant for construction engineering queries. Uses RAG (Retrieva
 
 ```
 app/
-├── agent/          # Core agent with multi-step tool-use loop
-├── embeddings/     # Sentence embedding model
-├── llm/            # Ollama LLM client
-├── loader/         # PDF document loader
-├── memory/         # Conversation history
-├── rag/            # RAG service (embed → search → generate)
-├── tools/          # Tool registry and implementations
-│   ├── calculator.py
-│   ├── save_note.py
-│   ├── list_notes.py
-│   └── rag_tool.py
-└── vectordb/       # ChromaDB vector store
+├── agent/              # Core agent with multi-step tool-use loop
+├── llm/                # Ollama LLM client
+├── memory/             # Conversation history
+├── planner/            # LLM-based planner (decides tool vs direct answer)
+├── prompts/            # System prompt builder
+├── tools/              # Tool registry and implementations
+│   ├── base.py         # Abstract tool base class
+│   ├── registry.py     # Tool registry (maps names → tools)
+│   ├── calculator/     # Math expression evaluator
+│   ├── construction/   # RAG search + document ingestion pipeline
+│   │   ├── ingestion/  # PDF loading, chunking, indexing
+│   │   ├── embedding_model.py
+│   │   ├── rag_service.py
+│   │   ├── retriever.py
+│   │   └── vector_store.py
+│   └── memory/         # PostgreSQL-backed notes (save + list)
+├── config.py           # Environment configuration (dotenv)
+├── application.py      # CLI entrypoint
+├── main.py             # Main runner
+└── index_documents.py  # Standalone document indexing script
 ```
 
 ## Tools
@@ -45,11 +53,19 @@ app/
 
 ## Configuration
 
-Create `app/config.py` with:
+Create a `.env` file in the project root:
 
-```python
-OLLAMA_HOST = "http://localhost:11434"
-OLLAMA_MODEL = "your-model-name"
+```env
+OLLAMA_HOST=http://localhost:11434
+OLLAMA_MODEL=qwen2.5:1.5b
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=agent_learning
+DB_USER=postgres
+DB_PASSWORD=your_password
+
+CHROMA_PATH=./chroma_db
 ```
 
 ## Setup
@@ -58,8 +74,18 @@ OLLAMA_MODEL = "your-model-name"
 pip install -r requirements.txt
 ```
 
+## Index Documents
+
+Before querying, index the PDF documents in the `documents/` folder:
+
+```bash
+python -m app.index_documents
+```
+
 ## Usage
 
 ```bash
 python -m app.main
 ```
+
+Type your construction-related questions and the agent will use its tools to answer. Type `exit` or `quit` to stop.

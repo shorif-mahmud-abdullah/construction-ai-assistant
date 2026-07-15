@@ -21,6 +21,7 @@ env/
 # Environment variables
 .env
 .env.*
+!.env.example
 
 # ChromaDB storage
 chroma_db/
