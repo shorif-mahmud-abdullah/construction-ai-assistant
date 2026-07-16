@@ -1,11 +1,10 @@
-from app.application import Application
+from fastapi import FastAPI
 
+from app.api.routes import router
 
-def main():
+app = FastAPI(
+    title="Construction AI Assistant",
+    version="1.0.0",
+)
 
-    app = Application()
-    app.run()
-
-
-if __name__ == "__main__":
-    main()
+app.include_router(router)
