@@ -2,6 +2,26 @@
 
 An AI-powered assistant for construction engineering queries. Uses RAG (Retrieval-Augmented Generation) to answer questions from construction documents, with built-in tools for calculations and note-taking.
 
+## How it works
+
+```mermaid
+flowchart TD
+    U[User question] --> P[Planner - LLM decides: tool or direct answer]
+    P -->|direct answer| L[Ollama LLM]
+    P -->|use a tool| A[Agent - multi-step tool-use loop]
+    A --> R[Tool registry]
+    R --> C[calculator]
+    R --> S[search_construction_docs - RAG]
+    R --> N[save_note / list_notes]
+    S --> V[(ChromaDB vectors)]
+    N --> D[(PostgreSQL notes)]
+    C --> A
+    S --> A
+    N --> A
+    A --> L
+    L --> O[Answer]
+```
+
 ## Architecture
 
 - **LLM**: Ollama (local inference, default model: `qwen2.5:1.5b`)
